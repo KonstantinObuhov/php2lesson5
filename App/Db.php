@@ -1,6 +1,7 @@
 <?php
 
 namespace App;
+use App\Exceptions\DbException;
 
 class Db
 {
@@ -15,17 +16,23 @@ class Db
         $dsn = 'mysql:host=' . $config->data['db']['host'] . ';dbname=' . $config->data['db']['dbname'];
         $user = $config->data['db']['user'];
         $password = $config->data['db']['password'];
-        $this->dbh = new \PDO($dsn, $user, $password);
+        /*Пытаемся подключиться к бд*/
+        try {
+            $this->dbh = new \PDO($dsn, $user, $password);
+        } catch (\PDOException $e) {
+            throw new DbException($e->getMessage());
+        }
     }
     /*Метод query возвращает результаты запросов к бд или в прпостейшем случае ошибку при выполнении
     запроса
     */
     public function query($sql, $data = [], $class = null)
     {
+
         $sth = $this->dbh->prepare($sql);
         $res = $sth->execute($data);
         if (false === $res) {
-            die('DB error in ' . $sql);
+            throw new DbException('Db error in ' . $sql);
         }
         if (null === $class) {
             return $sth->fetchAll();

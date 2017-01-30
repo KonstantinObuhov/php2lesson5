@@ -2,6 +2,7 @@
 
 namespace App;
 use App\Models\MagicTraitModels;
+use App\Exceptions\DataException;
 
 abstract class Model
 {
@@ -31,7 +32,11 @@ abstract class Model
         $db = new Db();
         $sql = 'SELECT * FROM ' .static::$table. ' WHERE id = :id';
         $query_res = $db->query($sql, [':id' => $id], static::class);
-        return empty($query_res) ? false : $query_res[0];
+        if (empty($query_res)) {
+            throw new DataException('Ошибка 404 - не найдено!');
+        } else {
+            return $query_res[0];
+        }
     }
 
     public function update()
@@ -78,7 +83,6 @@ abstract class Model
         if(is_null($this->id)) {
             $this->insert();
             return $this;
-            return $this->insert();
         } else {
             return $this->update();
         }
@@ -89,6 +93,26 @@ abstract class Model
         return null === $this->id;
     }
 
+    public function fill($data)
+    {
+        $me = new MultiException();
+        foreach ($data as $key => $value) {
+            if ('id' == $key || 'author_id' == $key) {
+                continue;
+            }
+            if(empty($value)) {
+                $me->add(new \Exception('Поле ' . $key . ' не должно быть пустым!'));
+            } else {
+                $this->$key = $value;
+            }
+        }
+
+        if (!$me->isEmpty()) {
+            throw $me;
+        }
+
+        return true;
+    }
     public function delete(): bool
     {
         $db = new Db();

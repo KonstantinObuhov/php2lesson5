@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Controller;
 use App\Models\Article;
+use App\MultiException;
 
 class Panel
     extends Controller
@@ -36,11 +37,21 @@ class Panel
         } else {
             $article = new Article;
         }
-        $article->title = $_POST['title'];
-        $article->text = $_POST['text'];
-        $article->author_id = $_POST['author_id'];
-        $article->save();
-        $this->sendRedirect('/Panel/');
+        $save_status = true;
+        try {
+            $article->fill($_POST);
+        } catch (MultiException $errors) {
+            $this->view->errors = $errors;
+            $this->view->article = $article;
+            echo $this->view->render(
+                __DIR__ . '/../../Panel/EditorTemplate.php'
+            );
+            $save_status = false;
+        }
+        if ($save_status) {
+            $article->save();
+            $this->sendRedirect('/Panel/');
+        }
     }
 
     public function actionDel()

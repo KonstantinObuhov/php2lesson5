@@ -8,6 +8,13 @@
     <title>Редактировать|Сохранить новость</title>
 </head>
 <body>
+<?php if (isset($errors)): ?>
+    <ul style="color:red;">
+        <?php foreach ($errors as $error): ?>
+            <li><?php echo $error->getMessage(); ?></li>
+        <?php endforeach; ?>
+    </ul>
+<?php endif; ?>
 <form action="/Panel/Save" method="post">
     <?php if (!$article->isNew()): ?>
         <input type="hidden" name="id" value="<?php echo $article->id; ?>">

@@ -32,4 +32,12 @@ abstract class Controller
         header('Location: ' . $url);
     }
 
+    public function showErrorPage($error)
+    {
+        $this->view->error = $error;
+        echo $this->view->render(
+            __DIR__ . '/Templates/error.php'
+        );
+    }
+
 }
