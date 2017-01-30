@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Controller;
 use App\Models\Article;
+use App\Exceptions\DataException;
 
 class Index
     extends Controller
@@ -19,7 +20,9 @@ class Index
 
     public function actionOne()
     {
-        $this->view->article = Article::findById($_GET['id']);
+        if(false === $this->view->article = Article::findById($_GET['id'])) {
+            throw new DataException('Ошибка 404 - не найдено!');
+        }
         echo $this->view->render(
             __DIR__ . '/../Templates/article.php'
         );

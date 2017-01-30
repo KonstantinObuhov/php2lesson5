@@ -23,4 +23,18 @@ class Article
             'class' => Author::class,
         ]
     ];
+
+    protected function validateTitle($val) {
+        if (strlen($val) <= 5) {
+            return false;
+        }
+        return true;
+    }
+
+    protected function validateText($val) {
+        if (strlen($val) <= 10) {
+            return false;
+        }
+        return true;
+    }
 }

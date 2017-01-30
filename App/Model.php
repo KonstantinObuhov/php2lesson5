@@ -1,8 +1,8 @@
 <?php
 
 namespace App;
+
 use App\Models\MagicTraitModels;
-use App\Exceptions\DataException;
 
 abstract class Model
 {
@@ -33,7 +33,7 @@ abstract class Model
         $sql = 'SELECT * FROM ' .static::$table. ' WHERE id = :id';
         $query_res = $db->query($sql, [':id' => $id], static::class);
         if (empty($query_res)) {
-            throw new DataException('Ошибка 404 - не найдено!');
+            return false;
         } else {
             return $query_res[0];
         }
@@ -97,14 +97,15 @@ abstract class Model
     {
         $me = new MultiException();
         foreach ($data as $key => $value) {
-            if ('id' == $key || 'author_id' == $key) {
-                continue;
+            $validator  = 'validate' . ucfirst($key);
+            if (method_exists($this, $validator)) {
+                $res = $this->$validator($value);
+                if(false === $res) {
+                    $me->add(new \Exception('Поле ' . $key . ' не корректно!'));
+                    continue;
+                }
             }
-            if(empty($value)) {
-                $me->add(new \Exception('Поле ' . $key . ' не должно быть пустым!'));
-            } else {
-                $this->$key = $value;
-            }
+            $this->$key = $value;
         }
 
         if (!$me->isEmpty()) {
